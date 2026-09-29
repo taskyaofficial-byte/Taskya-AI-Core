@@ -1,5 +1,6 @@
 import asyncio
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from .config import DB_PATH
 from .memory.store import MemoryStore
@@ -15,4 +16,8 @@ class Task(BaseModel):
 
 @router.post("/task")
 async def task(x: Task):
-    return await asyncio.to_thread(agent.run, x.message, x.language)
+    async def generate():
+        response = await asyncio.to_thread(agent.run, x.message, x.language)
+        yield response
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
