@@ -5,7 +5,7 @@ BASE=Path(__file__).resolve().parents[2]
 load_dotenv(BASE/'.env'); load_dotenv(BASE/'backend/.env')
 GROQ_API_KEY=os.getenv('GROQ_API_KEY','').strip()
 TAVILY_API_KEY=os.getenv('TAVILY_API_KEY','').strip()
-GROQ_MODEL=os.getenv('GROQ_MODEL','openai/gpt-oss-120b').strip()
+GROQ_MODEL=os.getenv('GROQ_MODEL','llama-3.1-8b-instant').strip()
 MAX_STEPS=int(os.getenv('TASKYA_AI_MAX_STEPS','10'))
 WORKSPACE=(BASE/os.getenv('TASKYA_AI_WORKSPACE','workspace')).resolve()
 ARTIFACTS=(BASE/os.getenv('TASKYA_AI_ARTIFACTS','artifacts')).resolve()
