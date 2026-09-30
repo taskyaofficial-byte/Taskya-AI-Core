@@ -6,4 +6,9 @@ groq
 tavily-python
 python-multipart
 pypdf
-Pillow
+openpyxl
+pandas
+matplotlib
+reportlab
+passlib[bcrypt]
+playwright

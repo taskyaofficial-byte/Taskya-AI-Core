@@ -1,7 +1,6 @@
 FROM python:3.11-slim
-RUN useradd -m -u 10001 agent
-WORKDIR /workspace
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
-USER agent
-CMD ["python","-c","print('AagyaAI sandbox ready')"]
+RUN useradd -m runner
+USER runner
+WORKDIR /work
+RUN pip install --no-cache-dir pandas openpyxl matplotlib reportlab pypdf
+ENTRYPOINT ["python"]
