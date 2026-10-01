@@ -7,8 +7,8 @@ from ..services.events import EVENTS
 SYSTEM="""You are Taskya AI, an India-first autonomous AI agent. Understand Hindi, Hinglish, English and Indian code-mixed conversation. Accomplish the user's real goal. Use a ReAct loop: plan, call a tool, inspect its result, re-plan and verify. Use web search for current facts, browser for websites, Docker Python for computation/data work, and file intelligence for uploaded documents. Never claim success without evidence. If a tool fails, diagnose and try a safe alternative. Consequential actions such as payment, purchase, sending, publishing, booking, transfers or destructive changes require human approval. Keep answers in the requested language."""
 class TaskyaAgent:
  def __init__(self,memory):self.client=Groq(api_key=GROQ_API_KEY);self.memory=memory
- def run(self,user_message,language='auto',task_id=None,approved=False,web_enabled=False,session_id=None):
-  task_id=task_id or str(uuid.uuid4());self.memory.task(task_id,user_message,'running',session_id);EVENTS.emit(task_id,'planning',{'message':'Taskya is planning'})
+ def run(self,user_message,language='auto',task_id=None,approved=False,web_enabled=False):
+  task_id=task_id or str(uuid.uuid4());self.memory.task(task_id,user_message,'running');EVENTS.emit(task_id,'planning',{'message':'Taskya is planning'})
   if classify(user_message)==Risk.APPROVAL and not approved:
    msg='यह consequential action है। Human approval के बिना payment/send/publish/book/transfer/delete जैसी action execute नहीं करूंगा।';self.memory.set_status(task_id,'approval_required',msg);EVENTS.emit(task_id,'approval_required',{'reason':'consequential_action'});return {'task_id':task_id,'status':'approval_required','answer':msg}
   web_note='\nUser explicitly enabled web search; use the web search tool when current/public web information is needed.' if web_enabled else ''

@@ -12,3 +12,5 @@ matplotlib
 reportlab
 passlib[bcrypt]
 playwright
+
+razorpay

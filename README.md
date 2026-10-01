@@ -29,19 +29,3 @@ This is not yet a finished cloud product or proven Manus replacement. Production
 ### Groq model note
 
 Use `GROQ_MODEL=openai/gpt-oss-120b`. Groq retired `llama-3.3-70b-versatile` for developer/free usage; the agent also contains a runtime fallback to `openai/gpt-oss-20b` so a stale Render environment variable does not immediately break chat.
-
-## Final deployment additions
-- Persistent browser-side recent chat history with backend session history endpoint (`/api/history`).
-- Contact section wired to the configured Zoho mailbox (`TASKYA_CONTACT_EMAIL`).
-- Razorpay checkout wiring: `/api/billing/order` and `/api/billing/verify`. Keep the secret only in Render environment variables.
-- Frontend composer uses file attachment, globe web-search and microphone icons without text labels.
-- Browser voice input/output is enabled where the browser exposes Web Speech API; microphone permission is required.
-
-### Render environment additions
-```text
-GROQ_MODEL=openai/gpt-oss-120b
-RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxx
-RAZORPAY_KEY_SECRET=your_razorpay_secret
-TASKYA_CONTACT_EMAIL=info@taskar.in
-```
-Use Razorpay test credentials first. The live gateway is not considered active until real Razorpay credentials are added in Render. The Razorpay secret must never be placed in frontend code.
