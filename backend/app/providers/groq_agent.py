@@ -264,7 +264,7 @@ class TaskyaAgent:
 max_completion_tokens=1024,
 reasoning_effort="low"
 
-   except Exception as e:
+except Exception as e:
 
     err = str(e)
 
