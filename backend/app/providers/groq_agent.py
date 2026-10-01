@@ -252,22 +252,19 @@ class TaskyaAgent:
     {"step": step}
    )
 
-   try:
-
-    r = self.client.chat.completions.create(
-     model=GROQ_MODEL,
-     messages=msgs,
-     tools=schemas(),
-     tool_choice="auto",
-     parallel_tool_calls=False,
-     temperature=0.2,
-max_completion_tokens=1024,
-reasoning_effort="low"
-
-except Exception as e:
-
-    err = str(e)
-
+  try:
+        r = self.client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=msgs,
+            tools=schemas(),
+            tool_choice="auto",
+            parallel_tool_calls=False,
+            temperature=0.2,
+            max_completion_tokens=1024,
+            reasoning_effort="low"
+        )
+    except Exception as e:
+        err = str(e)
     if (
      "model_not_found" in err
      or "does not exist" in err
