@@ -291,8 +291,9 @@ reasoning_effort="low"
        tools=schemas(),
        tool_choice="auto",
        parallel_tool_calls=False,
-       temperature=0.2
-      )
+       temperature=0.2,
+max_completion_tokens=1024,
+reasoning_effort="low"
 
      except Exception as e2:
 
