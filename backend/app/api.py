@@ -26,7 +26,9 @@ async def chat(x:ChatRequest):
   'answer': result.get('answer',''),
   'response': result.get('answer',''),
   'status': result.get('status','unknown'),
-  'task_id': result.get('task_id')
+  'task_id': result.get('task_id'),
+  'plan': result.get('plan'),
+  'metrics': result.get('metrics')
  }
 
 @router.get('/health')
