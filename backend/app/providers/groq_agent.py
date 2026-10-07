@@ -251,7 +251,6 @@ for step in range(1, MAX_STEPS + 1):
                     self._emit(task_id, 'tool_result', {'tool': name, 'status': 'error', 'result_preview': str(res)[:1200]})
                 self.memory.event(task_id, 'tool_result', {'tool': name, 'result': res})
                 msgs.append({'role': 'tool', 'tool_call_id': c.id, 'content': json.dumps(res, ensure_ascii=False, default=str)})
-
         ans = 'Maximum execution steps reached; task is not verified as complete.'
         self.memory.set_status(task_id, 'incomplete', ans)
         duration = self.memory.finish_metrics(task_id)
