@@ -163,28 +163,28 @@ class TaskyaAgent:
 
         context_messages = []
 
-for item in (history or [])[-10:]:
-    if not isinstance(item, dict):
-        continue
+        for item in (history or [])[-10:]:
+            if not isinstance(item, dict):
+                continue
 
-    role = item.get('role')
-    content = item.get('content')
+            role = item.get('role')
+            content = item.get('content')
 
-    if role in ('user', 'assistant') and isinstance(content, str) and content.strip():
-        context_messages.append({
-            'role': role,
-            'content': content[:6000]
-        })
+            if role in ('user', 'assistant') and isinstance(content, str) and content.strip():
+                context_messages.append({
+                    'role': role,
+                    'content': content[:6000]
+                })
 
-msgs = [
-    {'role': 'system', 'content': SYSTEM + '\nPreferred response language: ' + language},
-    *context_messages,
-    {'role': 'user', 'content': user_message},
-]
+        msgs = [
+            {'role': 'system', 'content': SYSTEM + '\nPreferred response language: ' + language},
+            *context_messages,
+            {'role': 'user', 'content': user_message},
+        ]
 
-plan = []
+        plan = []
 
-for step in range(1, MAX_STEPS + 1):
+        for step in range(1, MAX_STEPS + 1):
             if EVENTS.is_cancelled(task_id):
                 self.memory.set_status(task_id, 'cancelled', 'Task cancelled.')
                 self.memory.finish_metrics(task_id)
@@ -251,7 +251,8 @@ for step in range(1, MAX_STEPS + 1):
                     self._emit(task_id, 'tool_result', {'tool': name, 'status': 'error', 'result_preview': str(res)[:1200]})
                 self.memory.event(task_id, 'tool_result', {'tool': name, 'result': res})
                 msgs.append({'role': 'tool', 'tool_call_id': c.id, 'content': json.dumps(res, ensure_ascii=False, default=str)})
-         ans = 'Maximum execution steps reached; task is not verified as complete.'
+
+        ans = 'Maximum execution steps reached; task is not verified as complete.'
         self.memory.set_status(task_id, 'incomplete', ans)
         duration = self.memory.finish_metrics(task_id)
         metrics = self.memory.metrics(task_id)
