@@ -88,7 +88,7 @@ class TaskyaAgent:
 
     def _model_call(self, task_id, messages, tools=None, tool_choice='auto'):
         kwargs = dict(model=GROQ_MODEL, messages=messages, tool_choice=tool_choice,
-                      temperature=0.2, max_completion_tokens=1024, reasoning_effort='low')
+                      temperature=0.25, max_completion_tokens=4096, reasoning_effort='low')
         if tools is not None:
             kwargs['tools'] = tools
             kwargs['parallel_tool_calls'] = False
