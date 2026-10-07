@@ -17,11 +17,11 @@ class ChatRequest(BaseModel):
  message:str=Field(min_length=1,max_length=20000)
  language:str='auto'
  web_enabled:bool=False
-
+history: list[dict] = Field(default_factory=list)
 @router.post('/chat')
 async def chat(x:ChatRequest):
  # Compatibility endpoint for simple frontends that expect POST /api/chat.
- result=await asyncio.to_thread(agent.run,x.message,x.language,None,False,x.web_enabled)
+ result=await asyncio.to_thread(agent.run,x.message,x.language,None,False,x.web_enabled,x.history)
  return {
   'answer': result.get('answer',''),
   'response': result.get('answer',''),
