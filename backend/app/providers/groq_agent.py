@@ -181,8 +181,10 @@ msgs = [
     *context_messages,
     {'role': 'user', 'content': user_message},
 ]
-        plan = []
-        for step in range(1, MAX_STEPS + 1):
+
+plan = []
+
+for step in range(1, MAX_STEPS + 1):
             if EVENTS.is_cancelled(task_id):
                 self.memory.set_status(task_id, 'cancelled', 'Task cancelled.')
                 self.memory.finish_metrics(task_id)
