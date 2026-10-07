@@ -144,7 +144,7 @@ class TaskyaAgent:
         self._emit(task_id, 'completed', {'answer': answer, 'metrics': self.memory.metrics(task_id)})
         return {'task_id': task_id, 'status': 'completed', 'answer': answer, 'steps': 1, 'metrics': self.memory.metrics(task_id), 'duration_seconds': duration}
 
-    def run(self, user_message, language='auto', task_id=None, approved=False, web_enabled=False):
+    def run(self, user_message, language='auto', task_id=None, approved=False, web_enabled=False, history=None):
         task_id = task_id or str(uuid.uuid4())
         self.memory.task(task_id, user_message, 'running')
         self.memory.ensure_meta(task_id, plan=[], language=language, web_enabled=web_enabled)
@@ -161,10 +161,26 @@ class TaskyaAgent:
         if web_enabled:
             return self._web_search(user_message, language, task_id)
 
-        msgs = [
-            {'role': 'system', 'content': SYSTEM + '\nPreferred response language: ' + language},
-            {'role': 'user', 'content': user_message},
-        ]
+        context_messages = []
+
+for item in (history or [])[-10:]:
+    if not isinstance(item, dict):
+        continue
+
+    role = item.get('role')
+    content = item.get('content')
+
+    if role in ('user', 'assistant') and isinstance(content, str) and content.strip():
+        context_messages.append({
+            'role': role,
+            'content': content[:6000]
+        })
+
+msgs = [
+    {'role': 'system', 'content': SYSTEM + '\nPreferred response language: ' + language},
+    *context_messages,
+    {'role': 'user', 'content': user_message},
+]
         plan = []
         for step in range(1, MAX_STEPS + 1):
             if EVENTS.is_cancelled(task_id):
