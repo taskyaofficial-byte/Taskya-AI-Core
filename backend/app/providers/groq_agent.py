@@ -91,7 +91,7 @@ class TaskyaAgent:
             messages=messages,
             tool_choice=tool_choice,
             temperature=0.25,
-            max_completion_tokens=4096,
+            max_completion_tokens=3072,
             reasoning_effort='low'
         )
 
@@ -124,15 +124,38 @@ class TaskyaAgent:
 
             raise
 
-    def _web_search(self, user_message, language, task_id):
+    def _web_search(self, user_message, language, task_id, history=None):
+        context_messages = []
+
+        for item in (history or [])[-4:]:
+            if not isinstance(item, dict):
+                continue
+
+            role = item.get('role')
+            content = item.get('content')
+
+            if (
+                role in ('user', 'assistant')
+                and isinstance(content, str)
+                and content.strip()
+            ):
+                context_messages.append(
+                    {
+                        'role': role,
+                        'content': content[:1800]
+                    }
+                )
+
         messages = [
             {
                 'role': 'system',
                 'content':
                     'You are Taskya AI. Search the web for current information and '
                     'answer accurately. Be concise and name important sources. '
+                    'Use prior conversation context when relevant. '
                     'Preferred language: ' + language
             },
+            *context_messages,
             {
                 'role': 'user',
                 'content': user_message
@@ -252,12 +275,14 @@ class TaskyaAgent:
 
         duration = self.memory.finish_metrics(task_id)
 
+        metrics = self.memory.metrics(task_id)
+
         self._emit(
             task_id,
             'completed',
             {
                 'answer': answer,
-                'metrics': self.memory.metrics(task_id)
+                'metrics': metrics
             }
         )
 
@@ -266,7 +291,7 @@ class TaskyaAgent:
             'status': 'completed',
             'answer': answer,
             'steps': 1,
-            'metrics': self.memory.metrics(task_id),
+            'metrics': metrics,
             'duration_seconds': duration
         }
 
@@ -336,11 +361,14 @@ class TaskyaAgent:
             return self._web_search(
                 user_message,
                 language,
-                task_id
+                task_id,
+                history
             )
 
-        # Keep conversation memory bounded to prevent oversized Groq requests.
+        # Keep conversation memory small enough for the Groq TPM limit.
         context_messages = []
+        total_context_chars = 0
+        max_context_chars = 6000
 
         for item in (history or [])[-6:]:
             if not isinstance(item, dict):
@@ -354,12 +382,30 @@ class TaskyaAgent:
                 and isinstance(content, str)
                 and content.strip()
             ):
+                content = content[:1800]
+
+                if total_context_chars + len(content) > max_context_chars:
+                    remaining = max_context_chars - total_context_chars
+
+                    if remaining <= 0:
+                        break
+
+                    content = content[:remaining]
+
+                if not content:
+                    break
+
                 context_messages.append(
                     {
                         'role': role,
-                        'content': content[:2500]
+                        'content': content
                     }
                 )
+
+                total_context_chars += len(content)
+
+                if total_context_chars >= max_context_chars:
+                    break
 
         msgs = [
             {
@@ -461,7 +507,6 @@ class TaskyaAgent:
             if not calls:
                 ans = m.content or 'No final answer.'
 
-                # Lightweight completion QA.
                 self._emit(
                     task_id,
                     'verification',
@@ -506,7 +551,6 @@ class TaskyaAgent:
                     'duration_seconds': duration
                 }
 
-            # Capture model-provided planning text.
             if m.content:
                 plan.append(
                     {
@@ -583,7 +627,6 @@ class TaskyaAgent:
                         'successful_tools'
                     )
 
-                    # Best-effort counters for common output classes.
                     if isinstance(res, dict):
                         if res.get('sources') or res.get('results'):
                             self.memory.metric_inc(
@@ -650,11 +693,58 @@ class TaskyaAgent:
                         }
                     )
 
-                   self.memory.event(
-                        task_id,
-                        'tool_result',
-                        {
-                            'tool': name,
-                            'result': res
-                        }
-                    )
+                msgs.append(
+                    {
+                        'role': 'tool',
+                        'tool_call_id': c.id,
+                        'content': json.dumps(
+                            res,
+                            ensure_ascii=False,
+                            default=str
+                        )
+                    }
+                )
+
+        final_msg = 'Task reached the maximum execution steps without a final answer.'
+
+        self.memory.set_status(
+            task_id,
+            'completed',
+            final_msg
+        )
+
+        duration = self.memory.finish_metrics(
+            task_id
+        )
+
+        metrics = self.memory.metrics(
+            task_id
+        )
+
+        self._emit(
+            task_id,
+            'verification',
+            {
+                'stage': 'max_steps_check',
+                'status': 'passed'
+            }
+        )
+
+        self._emit(
+            task_id,
+            'completed',
+            {
+                'answer': final_msg,
+                'metrics': metrics
+            }
+        )
+
+        return {
+            'task_id': task_id,
+            'status': 'completed',
+            'answer': final_msg,
+            'steps': MAX_STEPS,
+            'plan': plan,
+            'metrics': metrics,
+            'duration_seconds': duration
+        }
