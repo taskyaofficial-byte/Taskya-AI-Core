@@ -161,20 +161,20 @@ class TaskyaAgent:
         if web_enabled:
             return self._web_search(user_message, language, task_id)
 
-        context_messages = []
+       context_messages = []
 
-        for item in (history or [])[-10:]:
-            if not isinstance(item, dict):
-                continue
+for item in (history or [])[-6:]:
+    if not isinstance(item, dict):
+        continue
 
-            role = item.get('role')
-            content = item.get('content')
+    role = item.get('role')
+    content = item.get('content')
 
-            if role in ('user', 'assistant') and isinstance(content, str) and content.strip():
-                context_messages.append({
-                    'role': role,
-                    'content': content[:6000]
-                })
+    if role in ('user', 'assistant') and isinstance(content, str) and content.strip():
+        context_messages.append({
+            'role': role,
+            'content': content[:2500]
+        })
 
         msgs = [
             {'role': 'system', 'content': SYSTEM + '\nPreferred response language: ' + language},
