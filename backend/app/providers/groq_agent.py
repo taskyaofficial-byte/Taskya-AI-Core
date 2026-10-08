@@ -650,11 +650,11 @@ class TaskyaAgent:
                         }
                     )
 
-               self.memory.event(
-                    task_id,
-                    'tool_result',
-                    {
-                        'tool': name,
-                        'result': res
-                    }
-                )
+                   self.memory.event(
+                        task_id,
+                        'tool_result',
+                        {
+                            'tool': name,
+                            'result': res
+                        }
+                    )
