@@ -419,7 +419,7 @@ class TaskyaAgent:
         # Keep conversation memory small enough for the Groq TPM limit.
         context_messages = []
         total_context_chars = 0
-        max_context_chars = 6000
+        max_context_chars = 2500
 
         for item in (history or [])[-6:]:
             if not isinstance(item, dict):
